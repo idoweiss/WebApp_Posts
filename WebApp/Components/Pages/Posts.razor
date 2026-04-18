@@ -2,50 +2,67 @@
 @using WebApp
 @* הזרקת השירות לניהול המשתמש המחובר *@
 @inject LoginService loginService
-@* הזרקת שירות הניווט *@
+@* הזרקת שירות הניווט למעבר בין דפים *@
 @inject NavigationManager Nav
 
-@* חובה להוסיף כדי שהלייקים והכפתורים יעבדו *@
+@* חובה להוסיף כדי שפעולות הלייק והמחיקה יעבדו בצד הלקוח *@
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 
 <div class="container mt-4" dir="rtl">
 
+    @* בדיקה: הצגת התוכן רק אם קיים עצם של משתמש מחובר במערכת *@
     @if (loggedUser != null)
     {
+        @* תיבת התראה עליונה המציגה את שם המשתמש וכפתורי ניווט מהיר *@
         <div class="alert alert-light border d-flex justify-content-between align-items-center">
+            @* הצגת השם המלא מתוך התכונה של עצם המשתמש המחובר *@
             <h2 class="m-0">@loggedUser.FullName</h2>
             <div>
                 <a href="/add-post" class="btn btn-success ms-2">הוסף פוסט חדש</a>
                 <a href="/my-posts" class="btn btn-warning ms-2">הפוסטים שלי</a>
                 <a href="/posts-table" class="btn btn-info ms-2">תצוגת טבלה</a>
+                @* לחיצה על כפתור זה תפעיל פעולה המנתקת את המשתמש *@
                 <button class="btn btn-danger" @onclick="HandleLogout">יציאה</button>
             </div>
         </div>
 
         <h3 class="my-4 text-center">גלריית פוסטים</h3>
 
+
+
+        @* מיכל גמיש המאפשר לכרטיסים לעבור שורה באופן אוטומטי ויוצר רווחים ביניהם *@
         <div class="d-flex flex-wrap justify-content-center gap-4">
+            @* לולאת מעבר על רשימת העצמים ליצירת כרטיס תצוגה עבור כל פוסט *@
             @foreach (PostWithAuthor item in allPosts)
             {
                 <div class="card p-2" style="width: 250px; border: 1px solid #ddd;">
 
+                    @* הצגת תמונת הפוסט מתוך כתובת האינטרנט השמורה בעצם *@
                     <img src="@item.ImageUrl" style="width: 100%; height: 200px; object-fit: cover;" />
 
                     <div class="mt-2 text-end">
+                        @* הצגת שם הכותב והטקסט של הפוסט *@
                         <h5 class="fw-bold">@item.FullName</h5>
                         <p>@item.Text</p>
 
+                        @* שורת עיצוב המשתמשת בתיבה גמישה כדי לפזר את הרכיבים עם רווח ביניהם וליישר אותם למרכז האנכי *@
                         <div class="d-flex justify-content-between align-items-center mt-3">
+
+                            @* הצגת כמות הלייקים בעיצוב מודגש ובצבע אדום *@
                             <span class="text-danger fw-bold">❤️ @item.Likes</span>
 
+                            @* מיכל המקבץ את כפתורי הפעולה בצד שמאל של הכרטיס *@
                             <div>
-                                @* כפתור לייק מוצג תמיד עבור כל פוסט *@
+                                @* כפתור המפעיל פעולה לעדכון כמות הלייקים עבור הפוסט הנוכחי *@
                                 <button class="btn btn-primary btn-sm" @onclick="() => HandleLike(item.Id)">לייק</button>
 
-                                @* בדיקת בעלות: הצגת כפתורי ניהול רק אם המשתמש המחובר הוא כותב הפוסט *@
+                                @* בדיקת תנאי: אם מזהה המשתמש שכתב את הפוסט שווה למזהה המשתמש המחובר, יוצגו אפשרויות ניהול *@
                                 @if (item.UserId == loggedUser.Id)
                                 {
+                                    @* קישור המעביר את המשתמש לדף עריכה עבור העצם הספציפי לפי המזהה שלו *@
                                     <a href="/edit-post/@item.Id" class="btn btn-warning btn-sm">עריכה</a>
+
+                                    @* כפתור המפעיל פעולה למחיקת העצם מהרשימה וממסד הנתונים *@
                                     <button class="btn btn-danger btn-sm" @onclick="() => DeletePost(item.Id)">מחיקה</button>
                                 }
                             </div>
@@ -60,42 +77,49 @@
 </div>
 
 @code {
+    @* רשימה המכילה את כל העצמים מסוג פוסט הכוללים מידע על הכותב *@
     private List<PostWithAuthor> allPosts = new List<PostWithAuthor>();
+
+    @* הגדרת משתנה שיכיל את העצם של המשתמש המחובר לצורך בדיקות אבטחה *@
     private User loggedUser;
+
+    @* יצירת מופע חדש של השירות לניהול פוסטים *@
     private PostService ps = new PostService();
 
+    @* פעולה המופעלת באופן אוטומטי ברגע שהדף נטען בדפדפן *@
     protected override async Task OnInitializedAsync()
     {
-        // שליפת המשתמש המחובר מהשירות
+        @* פנייה לשירות כדי לקבל את העצם של המשתמש שביצע כניסה למערכת *@
         loggedUser = await loginService.GetLoggedUser();
 
-        // הגנה על הדף: אם המשתמש לא מחובר, חזרה לדף הכניסה
+        @* אבטחת הדף: אם לא נמצא משתמש מחובר, המערכת תבצע ניווט חזרה לדף הכניסה *@
         if (loggedUser == null)
         {
             Nav.NavigateTo("/");
             return;
         }
 
-        // טעינת כל הפוסטים מהמסד
+        @* שליפת כל נתוני הפוסטים מהמסד ועדכון הרשימה המקומית *@
         allPosts = ps.GetAllPostsByLikes();
     }
 
+    @* פעולה המעדכנת את כמות הלייקים עבור פוסט מסוים ומרעננת את התצוגה *@
     private void HandleLike(int postId)
     {
         ps.AddLike(postId, loggedUser.Id);
         allPosts = ps.GetAllPostsByLikes();
     }
 
+    @* פעולה המוחקת פוסט ממסד הנתונים וטוענת מחדש את הרשימה המעודכנת *@
     private void DeletePost(int postId)
     {
-        // מחיקה ורענון הרשימה
         ps.DeletePost(postId);
         allPosts = ps.GetAllPostsByLikes();
     }
 
+    @* פעולה המנתקת את המשתמש הנוכחי מהמערכת ומחזירה אותו לדף ההתחברות *@
     private async Task HandleLogout()
     {
-        // ניתוק המשתמש וחזרה לדף הכניסה
         await loginService.Logout();
         Nav.NavigateTo("/");
     }

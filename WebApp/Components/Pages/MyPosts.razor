@@ -12,14 +12,16 @@
 
     @if (loggedUser != null)
     {
-        @* סרגל כלים עליון עם כפתורי ניווט ויציאה *@
+        @* סרגל כלים עליון עם כפתורי ניווט והצגת שם המשתמש המחובר *@
         <div class="alert alert-light border d-flex justify-content-between align-items-center mb-4">
-            <h2 class="m-0">הפוסטים שלי - ניהול תוכן</h2>
+            @* הצגת שם המשתמש מתוך העצם שנשלף בטעינת הדף *@
+            <h2 class="m-0">הפוסטים שלי - @loggedUser.FullName</h2>
             <div>
-                @* שימוש במחלקת me-2 ליצירת ריווח בין הכפתורים *@
+                @* כפתורי ניווט וניהול בצבעים שונים להבחנה מהירה *@
                 <a href="/add-post" class="btn btn-success me-2">הוסף פוסט חדש</a>
                 <a href="/posts" class="btn btn-info me-2">תצוגת גלריה</a>
-                <a href="/posts-table" class="btn btn-info me-2">תצוגת טבלה</a>
+                @* כפתור תצוגת טבלה בצבע כחול כדי להבדילו מתצוגת הגלריה *@
+                <a href="/posts-table" class="btn btn-primary me-2">תצוגת טבלה</a>
                 <button class="btn btn-danger" @onclick="HandleLogout">יציאה</button>
             </div>
         </div>
@@ -55,34 +57,37 @@
     User loggedUser;
     PostService ps = new PostService();
 
+    @* פעולה המופעלת באופן אוטומטי בעת טעינת הדף *@
     protected override async Task OnInitializedAsync()
     {
-        // שליפת העצם של המשתמש המחובר מהשירות
+        @* שליפת העצם של המשתמש המחובר מהשירות *@
         loggedUser = await loginService.GetLoggedUser();
 
-        // בדיקת אבטחה: במידה והמשתמש לא מחובר נבצע הפניה לדף הכניסה
+        @* בדיקת אבטחה: במידה והמשתמש לא מחובר נבצע הפניה לדף הכניסה *@
         if (loggedUser == null)
         {
             Nav.NavigateTo("/");
             return;
         }
 
-        // טעינת הפוסטים המשוייכים למזהה המשתמש מתוך העצם המחובר
+        @* טעינת הפוסטים המשוייכים למזהה המשתמש מתוך העצם המחובר *@
         myPosts = ps.GetPostsByUserId(loggedUser.Id);
     }
 
+    @* פעולה המוחקת פוסט ומעדכנת את הרשימה *@
     private void DeletePost(int postId)
     {
-        // הפעלת פעולת המחיקה במסד הנתונים
+        @* הפעלת פעולת המחיקה במסד הנתונים *@
         ps.DeletePost(postId);
 
-        // טעינה מחדש של הרשימה המסוננת עבור המשתמש
+        @* טעינה מחדש של הרשימה המסוננת עבור המשתמש *@
         myPosts = ps.GetPostsByUserId(loggedUser.Id);
     }
 
+    @* פעולה המנתקת את המשתמש ומחזירה אותו לדף הכניסה *@
     private async Task HandleLogout()
     {
-        // ביצוע פעולת ניתוק דרך השירות וחזרה לשער הכניסה
+        @* ביצוע פעולת ניתוק דרך השירות וחזרה לשער הכניסה *@
         await loginService.Logout();
         Nav.NavigateTo("/");
     }
