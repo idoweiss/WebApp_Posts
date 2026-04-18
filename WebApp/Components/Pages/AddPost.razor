@@ -1,0 +1,58 @@
+﻿@page "/add-post"
+@using WebApp
+@* הזרקת השירות לניהול המשתמש המחובר *@
+@inject LoginService loginService
+@* הזרקת שירות הניווט בין דפים *@
+@inject NavigationManager Nav
+
+@* חובה להוסיף כדי שקישור הנתונים והפעולות יעבדו *@
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+<div class="container mt-5 text-end" dir="rtl">
+    <h3>הוספת פוסט חדש</h3>
+
+    @* הצגת הטופס רק אם קיים עצם של משתמש מחובר *@
+    @if (loggedUser != null)
+    {
+        <div class="mb-3">
+            <label>תוכן הפוסט:</label>
+            <input class="form-control" @bind-value="post.Text" />
+        </div>
+
+        <div class="mb-3">
+            <label>קישור לתמונה:</label>
+            <input class="form-control" @bind-value="post.ImageUrl" />
+        </div>
+
+        <button class="btn btn-primary" @onclick="SavePost">פרסם פוסט</button>
+    }
+</div>
+
+@code {
+    Post post = new Post();
+    PostService service = new PostService();
+    User loggedUser;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // @* שליפת המשתמש המחובר לצורך שיוך הפוסט ואבטחה *@
+        loggedUser = await loginService.GetLoggedUser();
+
+        if (loggedUser == null)
+        {
+            Nav.NavigateTo("/");
+            return;
+        }
+    }
+
+    public void SavePost()
+    {
+        // @* שיוך אוטומטי של הפוסט למשתמש באמצעות המזהה מתוך העצם *@
+        post.UserId = loggedUser.Id;
+
+        service.AddNewPost(post);
+
+        // @* חזרה לדף הראשי - יש להתאים את הכתובת לפרויקט שלכם *@
+        Nav.NavigateTo("/posts");
+    }
+}

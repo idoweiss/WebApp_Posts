@@ -1,0 +1,52 @@
+﻿@page "/edit-user/{UserId:int}"
+@rendermode InteractiveServer
+@inject NavigationManager Nav
+
+
+
+<h3>Edit User</h3>
+
+@* שדות קלט להוספת משתמש - מקושרים למשתנים ייעודיים להוספה *@
+
+@* שדה שם *@
+<text>Name:</text>
+<input @bind-value="user.FullName" />
+<p></p>
+
+@*   *@
+<text>User Name:</text>
+<input @bind-value="user.UserName" />
+<p></p>
+
+@* שדה אמייל *@
+<text>Email:</text>
+<input @bind-value="user.Email" />
+<p></p>
+
+@* שדה אמייל *@
+<text>Password:</text>
+<input @bind-value="user.Password" />
+<p></p>
+
+
+@* "class="הוספנו עיצוב לכפתור באמצעות הוראת *@
+<button class="btn btn-primary" @onclick="UpdateUser">Add User</button>
+
+
+
+@code {
+
+    [Parameter]
+    public int UserId { get; set; }
+
+    User user = new User();
+    UserService service = new UserService();
+
+    public void UpdateUser()
+    {
+        service.UpdateUser(user);
+        Nav.NavigateTo("/users");
+    }
+
+
+}

@@ -1,0 +1,111 @@
+﻿@page "/posts-table"
+@using WebApp
+@* הזרקת השירות לניהול המשתמש המחובר *@
+@inject LoginService loginService
+@* הזרקת שירות הניווט בין דפים *@
+@inject NavigationManager Nav
+
+@* חובה להוסיף כדי שקישור הנתונים והפעולות יעבדו *@
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+<div class="container mt-4" dir="rtl">
+
+    @* הצגת התוכן רק אם קיים עצם של משתמש מחובר *@
+    @if (loggedUser != null)
+    {
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>@loggedUser.FullName</h2>
+            <div>
+                <a href="/add-post" class="btn btn-success ms-2">הוסף פוסט חדש</a>
+                <a href="/my-posts" class="btn btn-warning ms-2">הפוסטים שלי</a>
+                <a href="/posts" class="btn btn-info ms-2">תצוגת גלריה</a>
+                <button class="btn btn-secondary" @onclick="HandleLogout">יציאה</button>
+            </div>
+        </div>
+
+        <table class="table table-bordered text-end">
+            <thead class="table-dark">
+                <tr>
+                    <th>מזהה</th>
+                    <th>כותב</th>
+                    <th>תיאור</th>
+                    <th>תמונה</th>
+                    <th>לייקים</th>
+                    <th>פעולות ניהול</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (PostWithAuthor item in allPosts)
+                {
+                    <tr>
+                        <td>@item.Id</td>
+                        <td>@item.FullName</td>
+                        <td>@item.Text</td>
+                        <td>
+                            <img src="@item.ImageUrl" style="width: 100px; height: 100px; object-fit: cover;" />
+                        </td>
+                        <td class="text-danger fw-bold">❤️ @item.Likes</td>
+                        <td>
+                            @* כפתור לייק זמין לכולם עבור כל פוסט *@
+                            <button class="btn btn-primary btn-sm" @onclick="() => HandleLike(item.Id)">לייק</button>
+
+                            @* בדיקה האם המשתמש המחובר הוא בעל הפוסט לצורך הצגת כפתורי עריכה ומחיקה *@
+                            @if (item.UserId == loggedUser.Id)
+                            {
+                                <a href="/edit-post/@item.Id" class="btn btn-warning btn-sm ms-1">עריכה</a>
+                                <button class="btn btn-danger btn-sm" @onclick="() => DeletePost(item.Id)">מחיקה</button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+</div>
+
+@code {
+    private List<PostWithAuthor> allPosts = new List<PostWithAuthor>();
+    private User loggedUser;
+    private PostService ps = new PostService();
+
+    // פעולה זו רצה עם טעינת הדף ובודקת את זהות המשתמש
+    protected override async Task OnInitializedAsync()
+    {
+        // שליפת העצם של המשתמש המחובר מהשירות
+        loggedUser = await loginService.GetLoggedUser();
+
+        // הגנה על הדף: אם המשתמש אינו מחובר נעבור לדף הכניסה
+        if (loggedUser == null)
+        {
+            Nav.NavigateTo("/");
+            return;
+        }
+
+        // טעינת רשימת כל הפוסטים מהמסד
+        allPosts = ps.GetAllPostsByLikes();
+    }
+
+    // פעולה לעדכון לייק עבור פוסט ספציפי
+    private void HandleLike(int postId)
+    {
+        // הוספת לייק תוך שימוש במזהה המשתמש מתוך העצם המחובר
+        ps.AddLike(postId, loggedUser.Id);
+        allPosts = ps.GetAllPostsByLikes();
+    }
+
+    // פעולה למחיקת פוסט ורענון הרשימה
+    private void DeletePost(int postId)
+    {
+        ps.DeletePost(postId);
+        allPosts = ps.GetAllPostsByLikes();
+    }
+
+    // פעולה המנתקת את המשתמש מהמערכת
+    private async Task HandleLogout()
+    {
+        // ניתוק המשתמש דרך השירות וחזרה לדף הכניסה
+        await loginService.Logout();
+        Nav.NavigateTo("/");
+    }
+}

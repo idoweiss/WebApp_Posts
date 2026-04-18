@@ -1,0 +1,60 @@
+﻿@page "/edit-post/{PostId:int}"
+@using WebApp
+@* הזרקת השירות לניהול המשתמש המחובר *@
+@inject LoginService loginService
+@* הזרקת שירות הניווט בין דפים *@
+@inject NavigationManager Nav
+
+@* חובה להוסיף כדי שקישור הנתונים והפעולות יעבדו *@
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+<div class="container mt-5 text-end" dir="rtl">
+    <h3>עריכת פוסט</h3>
+
+    @* הצגת שדות העריכה רק למשתמש מחובר *@
+    @if (loggedUser != null)
+    {
+        <div class="mb-3">
+            <label>תוכן הפוסט:</label>
+            <input class="form-control" @bind-value="post.Text" />
+        </div>
+
+        <div class="mb-3">
+            <label>קישור לתמונה:</label>
+            <input class="form-control" @bind-value="post.ImageUrl" />
+        </div>
+
+        <button class="btn btn-primary" @onclick="UpdatePost">שמור שינויים</button>
+    }
+</div>
+
+@code {
+    @* קבלת מזהה הפוסט מכתובת הדף *@
+    [Parameter]
+    public int PostId { get; set; }
+
+    Post post = new Post();
+    User loggedUser;
+    PostService service = new PostService();
+
+    protected override async Task OnInitializedAsync()
+    {
+        @* בדיקת אבטחה ואימות משתמש מחובר *@
+        loggedUser = await loginService.GetLoggedUser();
+
+        if (loggedUser == null)
+        {
+            Nav.NavigateTo("/");
+            return;
+        }
+
+        @* טעינת העצם לעריכה לפי המזהה שהתקבל בכתובת הדף *@
+        post = service.GetPostById(PostId);
+    }
+
+    public void UpdatePost()
+    {
+        service.UpdatePost(post);
+        Nav.NavigateTo("/posts");
+    }
+}

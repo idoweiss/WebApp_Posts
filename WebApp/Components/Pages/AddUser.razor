@@ -1,0 +1,48 @@
+﻿@page "/add-user"
+@rendermode InteractiveServer
+@inject NavigationManager Nav
+
+
+
+<h3>AddUser</h3>
+
+@* --- הוספת משתמש --- *@
+@* שדות קלט להוספת משתמש - מקושרים למשתנים ייעודיים להוספה *@
+
+@* שדה שם *@
+<text>Name:</text>
+<input @bind-value="user.FullName" />
+<p></p>
+
+@*   *@
+<text>User Name:</text>
+<input @bind-value="user.UserName" />
+<p></p>
+
+@* שדה אמייל *@
+<text>Email:</text>
+<input @bind-value="user.Email" />
+<p></p>
+
+@* שדה אמייל *@
+<text>Password:</text>
+<input @bind-value="user.Password" />
+<p></p>
+
+
+@* כפתור להוספת משתמש *@
+@* "class="הוספנו עיצוב לכפתור באמצעות הוראת *@
+<button class="btn btn-primary" @onclick="SaveUser">Add User</button>
+
+
+
+@code {
+    User user = new User();
+    UserService service = new UserService();
+
+    public void SaveUser()
+    {
+        service.AddNewUser(user);
+        Nav.NavigateTo("/users");
+    }
+}

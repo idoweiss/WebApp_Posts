@@ -1,0 +1,102 @@
+﻿@page "/posts"
+@using WebApp
+@* הזרקת השירות לניהול המשתמש המחובר *@
+@inject LoginService loginService
+@* הזרקת שירות הניווט *@
+@inject NavigationManager Nav
+
+@* חובה להוסיף כדי שהלייקים והכפתורים יעבדו *@
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+<div class="container mt-4" dir="rtl">
+
+    @if (loggedUser != null)
+    {
+        <div class="alert alert-light border d-flex justify-content-between align-items-center">
+            <h2 class="m-0">@loggedUser.FullName</h2>
+            <div>
+                <a href="/add-post" class="btn btn-success ms-2">הוסף פוסט חדש</a>
+                <a href="/my-posts" class="btn btn-warning ms-2">הפוסטים שלי</a>
+                <a href="/posts-table" class="btn btn-info ms-2">תצוגת טבלה</a>
+                <button class="btn btn-danger" @onclick="HandleLogout">יציאה</button>
+            </div>
+        </div>
+
+        <h3 class="my-4 text-center">גלריית פוסטים</h3>
+
+        <div class="d-flex flex-wrap justify-content-center gap-4">
+            @foreach (PostWithAuthor item in allPosts)
+            {
+                <div class="card p-2" style="width: 250px; border: 1px solid #ddd;">
+
+                    <img src="@item.ImageUrl" style="width: 100%; height: 200px; object-fit: cover;" />
+
+                    <div class="mt-2 text-end">
+                        <h5 class="fw-bold">@item.FullName</h5>
+                        <p>@item.Text</p>
+
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <span class="text-danger fw-bold">❤️ @item.Likes</span>
+
+                            <div>
+                                @* כפתור לייק מוצג תמיד עבור כל פוסט *@
+                                <button class="btn btn-primary btn-sm" @onclick="() => HandleLike(item.Id)">לייק</button>
+
+                                @* בדיקת בעלות: הצגת כפתורי ניהול רק אם המשתמש המחובר הוא כותב הפוסט *@
+                                @if (item.UserId == loggedUser.Id)
+                                {
+                                    <a href="/edit-post/@item.Id" class="btn btn-warning btn-sm">עריכה</a>
+                                    <button class="btn btn-danger btn-sm" @onclick="() => DeletePost(item.Id)">מחיקה</button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            }
+        </div>
+    }
+
+</div>
+
+@code {
+    private List<PostWithAuthor> allPosts = new List<PostWithAuthor>();
+    private User loggedUser;
+    private PostService ps = new PostService();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // שליפת המשתמש המחובר מהשירות
+        loggedUser = await loginService.GetLoggedUser();
+
+        // הגנה על הדף: אם המשתמש לא מחובר, חזרה לדף הכניסה
+        if (loggedUser == null)
+        {
+            Nav.NavigateTo("/");
+            return;
+        }
+
+        // טעינת כל הפוסטים מהמסד
+        allPosts = ps.GetAllPostsByLikes();
+    }
+
+    private void HandleLike(int postId)
+    {
+        ps.AddLike(postId, loggedUser.Id);
+        allPosts = ps.GetAllPostsByLikes();
+    }
+
+    private void DeletePost(int postId)
+    {
+        // מחיקה ורענון הרשימה
+        ps.DeletePost(postId);
+        allPosts = ps.GetAllPostsByLikes();
+    }
+
+    private async Task HandleLogout()
+    {
+        // ניתוק המשתמש וחזרה לדף הכניסה
+        await loginService.Logout();
+        Nav.NavigateTo("/");
+    }
+}
