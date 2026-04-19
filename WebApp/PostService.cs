@@ -48,9 +48,10 @@
         public List<PostWithAuthor> GetAllPostsByLikes()
         {
             // השאילתה כוללת את מזהה המשתמש כדי לאפשר בדיקת בעלות בדפים
-            string sql = "SELECT Posts.Id, Posts.Text, Posts.ImageUrl, Posts.Likes, Posts.UserId, Users.FullName FROM Posts " +
-                         "JOIN Users ON Posts.UserId = Users.Id " +
-                         "ORDER BY Posts.Likes DESC";
+            string sql = $@"SELECT Posts.Id, Posts.Text, Posts.ImageUrl, Posts.Likes, Posts.UserId, Users.FullName 
+                            FROM Posts 
+                            JOIN Users ON Posts.UserId = Users.Id 
+                            ORDER BY Posts.Likes DESC";
 
             List<PostWithAuthor> list = DbHelper.RunSelect<PostWithAuthor>(sql);
             return list;
@@ -59,9 +60,10 @@
         // פעולה לשליפת פוסטים השייכים למשתמש ספציפי בלבד
         public List<PostWithAuthor> GetPostsByUserId(int userId)
         {
-            string sql = "SELECT Posts.Id, Posts.Text, Posts.ImageUrl, Posts.Likes, Posts.UserId, Users.FullName FROM Posts " +
-                         "JOIN Users ON Posts.UserId = Users.Id " +
-                         "WHERE Posts.UserId = " + userId;
+            string sql = $@"SELECT Posts.Id, Posts.Text, Posts.ImageUrl, Posts.Likes, Posts.UserId, Users.FullName 
+                            FROM Posts 
+                            JOIN Users ON Posts.UserId = Users.Id 
+                            WHERE Posts.UserId = {userId}";
 
             List<PostWithAuthor> list = DbHelper.RunSelect<PostWithAuthor>(sql);
             return list;
@@ -70,7 +72,7 @@
         // פעולה לשליפת עצם פוסט בודד לפי המזהה שלו
         public Post GetPostById(int id)
         {
-            string sql = "SELECT * FROM Posts WHERE Id = " + id;
+            string sql = $"SELECT * FROM Posts WHERE Id = {id}";
             List<Post> results = DbHelper.RunSelect<Post>(sql);
             if (results.Count > 0)
             {
@@ -82,7 +84,7 @@
         // פעולה לעדכון תוכן של פוסט קיים
         public void UpdatePost(Post post)
         {
-            string sql = "UPDATE Posts SET Text = '" + post.Text + "', ImageUrl = '" + post.ImageUrl + "' WHERE Id = " + post.Id;
+            string sql = $"UPDATE Posts SET Text = '{post.Text}', ImageUrl = '{post.ImageUrl}' WHERE Id = {post.Id}";
             DbHelper.RunSqlChange(sql);
         }
 
@@ -90,18 +92,17 @@
         public void DeletePost(int id)
         {
             // מחיקת הלייקים תחילה כדי לשמור על תקינות מסד הנתונים
-            string sqlLikes = "DELETE FROM Likes WHERE PostId = " + id;
+            string sqlLikes = $"DELETE FROM Likes WHERE PostId = {id}";
             DbHelper.RunSqlChange(sqlLikes);
 
-            string sqlPost = "DELETE FROM Posts WHERE Id = " + id;
+            string sqlPost = $"DELETE FROM Posts WHERE Id = {id}";
             DbHelper.RunSqlChange(sqlPost);
         }
 
         // פעולה להוספת פוסט חדש למערכת
         public void AddNewPost(Post post)
         {
-            string sql = "INSERT INTO Posts (Text, ImageUrl, Likes, UserId) VALUES " +
-                         "('" + post.Text + "', '" + post.ImageUrl + "', 0, " + post.UserId + ")";
+            string sql = $"INSERT INTO Posts (Text, ImageUrl, Likes, UserId) VALUES ('{post.Text}', '{post.ImageUrl}', 0, {post.UserId})";
             DbHelper.RunSqlChange(sql);
         }
 
@@ -109,17 +110,17 @@
         public void AddLike(int postId, int userId)
         {
             // בדיקה האם המשתמש כבר נתן לייק לפוסט זה
-            string checkSql = "SELECT * FROM Likes WHERE PostId = " + postId + " AND UserId = " + userId;
+            string checkSql = $"SELECT * FROM Likes WHERE PostId = {postId} AND UserId = {userId}";
             List<PostWithAuthor> results = DbHelper.RunSelect<PostWithAuthor>(checkSql);
 
             if (results.Count == 0)
             {
                 // הוספת רישום בטבלת הלייקים
-                string insertLike = "INSERT INTO Likes (PostId, UserId) VALUES (" + postId + ", " + userId + ")";
+                string insertLike = $"INSERT INTO Likes (PostId, UserId) VALUES ({postId}, {userId})";
                 DbHelper.RunSqlChange(insertLike);
 
                 // עדכון מונה הלייקים בטבלת הפוסטים
-                string updatePost = "UPDATE Posts SET Likes = Likes + 1 WHERE Id = " + postId;
+                string updatePost = $"UPDATE Posts SET Likes = Likes + 1 WHERE Id = {postId}";
                 DbHelper.RunSqlChange(updatePost);
             }
         }
