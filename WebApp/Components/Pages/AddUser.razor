@@ -1,60 +1,50 @@
 ﻿@page "/add-user"
 @using WebApp
-@inject LoginService loginService
 @inject NavigationManager Nav
+
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 
-@* מודאים שרק מנהל המערכת יכול לבצע שינויים במשתמשי המערכת *@
-@if (loggedUser != null && loggedUser.UserName == "admin")
-{
-    <h3>AddUser</h3>
+<div class="container mt-5 text-end" dir="rtl">
+    <h3>דף הרשמה למערכת</h3>
+    <p>מלאו את הפרטים כדי להצטרף לרשת החברתית:</p>
 
-    @* --- הוספת משתמש --- *@
-    @* שדות קלט להוספת משתמש - מקושרים למשתנים ייעודיים להוספה *@
+    @* שדות קלט להרשמה המקושרים לשדות בעצם המשתמש *@
+    <div class="mb-3">
+        <label>שם מלא:</label>
+        <input class="form-control" @bind-value="user.FullName" />
+    </div>
 
-    @* שדה שם *@
-    <text>Name:</text>
-    <input @bind-value="user.FullName" />
-    <p></p>
+    <div class="mb-3">
+        <label>שם משתמש:</label>
+        <input class="form-control" @bind-value="user.UserName" />
+    </div>
 
-    @* שדה שם משתמש *@
-    <text>User Name:</text>
-    <input @bind-value="user.UserName" />
-    <p></p>
+    <div class="mb-3">
+        <label>אימייל:</label>
+        <input class="form-control" @bind-value="user.Email" />
+    </div>
 
-    @* שדה אמייל *@
-    <text>Email:</text>
-    <input @bind-value="user.Email" />
-    <p></p>
+    <div class="mb-3">
+        <label>סיסמה:</label>
+        <input type="password" class="form-control" @bind-value="user.Password" />
+    </div>
 
-    @* שדה סיסמה *@
-    <text>Password:</text>
-    <input type="password" @bind-value="user.Password" />
-    <p></p>
-
-    @* כפתור להוספת משתמש *@
-    <button class="btn btn-primary" @onclick="SaveUser">Add User</button>
-}
+    @* לחיצה על הכפתור תשמור את המשתמש ותחזיר אותו לדף הכניסה *@
+    <button class="btn btn-success" @onclick="HandleRegister">סיום הרשמה</button>
+    <a href="/" class="btn btn-link">כבר יש לי משתמש</a>
+</div>
 
 @code {
+    // יצירת עצם משתמש חדש שיכיל את הנתונים מהשדות
     User user = new User();
-    User loggedUser;
     UserService service = new UserService();
 
-    protected override async Task OnInitializedAsync()
+    public void HandleRegister()
     {
-        loggedUser = await loginService.GetLoggedUser();
-        //מודאים שרק מנהל המערכת יכול לבצע שינויים במשתמשי המערכת
-        if (loggedUser == null || loggedUser.UserName != "admin")
-        {
-            Nav.NavigateTo("/");
-            return;
-        }
-    }
-
-    public void SaveUser()
-    {
+        // שמירת המשתמש החדש במסד הנתונים באמצעות השירות
         service.AddNewUser(user);
-        Nav.NavigateTo("/users");
+
+        // לאחר ההרשמה, נעבור לדף הכניסה כדי שהמשתמש יוכל להתחבר
+        Nav.NavigateTo("/");
     }
 }

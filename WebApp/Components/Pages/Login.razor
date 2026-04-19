@@ -1,15 +1,11 @@
 ﻿@page "/"
 @using WebApp
-@* הזרקת השירות לניהול המשתמש המחובר *@
 @inject LoginService loginService
 @inject NavigationManager Nav
-
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 
 <div class="container mt-5 text-end" dir="rtl">
-    @* כאן התלמידים יכולים להתאים את שם האתר לנושא האישי של הפרויקט שלהם *@
     <h1 class="display-4 text-primary mb-4">הרשת החברתית שלי</h1>
-
     <h3>כניסה למערכת</h3>
 
     <div class="mb-3">
@@ -23,6 +19,12 @@
     </div>
 
     <button class="btn btn-primary" @onclick="HandleLogin">התחבר</button>
+
+    @* קישור לדף ההרשמה בכתובת הקיימת *@
+    <div class="mt-3">
+        <span>עדיין לא רשומים? </span>
+        <a href="/add-user">להרשמה למערכת לחצו כאן</a>
+    </div>
 </div>
 
 @code {
@@ -30,12 +32,9 @@
 
     private async Task HandleLogin()
     {
-        @*  המשתמש אימות  *@
         bool success = await loginService.Login(loginUser.UserName, loginUser.Password);
-
         if (success)
         {
-            @*ההתחברות לאחר יפנה האתר שאליה הכתובת  את עדכנו  *@
             Nav.NavigateTo("/posts-table");
         }
     }
