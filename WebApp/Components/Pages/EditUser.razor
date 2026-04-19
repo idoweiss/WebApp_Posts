@@ -1,52 +1,70 @@
 ﻿@page "/edit-user/{UserId:int}"
-@rendermode InteractiveServer
+@using WebApp
+@inject LoginService loginService
 @inject NavigationManager Nav
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
 
+@* מודאים שרק מנהל המערכת יכול לבצע שינויים במשתמשי המערכת *@
+@if (loggedUser != null && loggedUser.UserName == "admin" && user != null)
+{
+    <h3>Edit User</h3>
 
+    @* שדות קלט לעריכת משתמש - מקושרים לעצם שנטען *@
 
-<h3>Edit User</h3>
+    @* שדה שם *@
+    <text>Name:</text>
+    <input @bind-value="user.FullName" />
+    <p></p>
 
-@* שדות קלט להוספת משתמש - מקושרים למשתנים ייעודיים להוספה *@
+    @* שדה שם משתמש *@
+    <text>User Name:</text>
+    <input @bind-value="user.UserName" />
+    <p></p>
 
-@* שדה שם *@
-<text>Name:</text>
-<input @bind-value="user.FullName" />
-<p></p>
+    @* שדה אמייל *@
+    <text>Email:</text>
+    <input @bind-value="user.Email" />
+    <p></p>
 
-@*   *@
-<text>User Name:</text>
-<input @bind-value="user.UserName" />
-<p></p>
+    @* שדה סיסמה *@
+    <text>Password:</text>
+    <input type="password" @bind-value="user.Password" />
+    <p></p>
 
-@* שדה אמייל *@
-<text>Email:</text>
-<input @bind-value="user.Email" />
-<p></p>
-
-@* שדה אמייל *@
-<text>Password:</text>
-<input @bind-value="user.Password" />
-<p></p>
-
-
-@* "class="הוספנו עיצוב לכפתור באמצעות הוראת *@
-<button class="btn btn-primary" @onclick="UpdateUser">Add User</button>
-
-
+    @* עדכון המשתמש וחזרה לרשימה *@
+    <button class="btn btn-primary" @onclick="UpdateUser">Update User</button>
+}
 
 @code {
-
     [Parameter]
     public int UserId { get; set; }
 
-    User user = new User();
-    UserService service = new UserService();
+    User user;
+    User loggedUser;
+    UserService userService = new UserService();
+
+    protected override async Task OnInitializedAsync()
+    {
+        loggedUser = await loginService.GetLoggedUser();
+        //מודאים שרק מנהל המערכת יכול לבצע שינויים במשתמשי המערכת
+        if (loggedUser == null || loggedUser.UserName != "admin")
+        {
+            Nav.NavigateTo("/");
+            return;
+        }
+
+        user = userService.GetUserById(UserId);
+
+        // אם לא מצאנו את המשתמש בבסיס הנתונים, נאתחל את הערך בעצם משתמש ריק כדי למנוע שגיאה
+        if (user == null)
+        {
+            user = new User();
+        }
+    }
 
     public void UpdateUser()
     {
-        service.UpdateUser(user);
+        userService.UpdateUser(user);
         Nav.NavigateTo("/users");
     }
-
-
 }

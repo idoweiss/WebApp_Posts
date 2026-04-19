@@ -19,6 +19,7 @@ namespace WebApp
 
             DbHelper.RunSqlChange(@"
             INSERT OR IGNORE INTO Users (FullName, UserName, Password, Email) VALUES
+            ('מנהל מערכת', 'admin', 'admin123', 'admin@webapp.com'),
             ('Israel Israeli', 'israel1', 'p123', 'israel@example.com'),
             ('Noa Cohen', 'noac', 'p456', 'noa@example.com'),
             ('Yossi Levi', 'yossi_l', 'p789', 'yossi@example.com');");
@@ -34,11 +35,6 @@ namespace WebApp
         public void DeleteUser(int id)
         {
             DbHelper.RunSqlChange("DELETE FROM Users WHERE Id = " + id);
-        }
-
-        public void UpdateEmailById(int id, string newEmail)
-        {
-            DbHelper.RunSqlChange("UPDATE Users SET Email = '" + newEmail + "' WHERE Id = " + id);
         }
 
         public void AddNewUser(User newUser)

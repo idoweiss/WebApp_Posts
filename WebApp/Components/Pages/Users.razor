@@ -1,141 +1,77 @@
 ﻿@page "/users"
-@rendermode InteractiveServer
+@using WebApp
+@inject LoginService loginService
+@inject NavigationManager Nav
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
 
-<h3>Users</h3>
-<p></p>
-<table class="table table-success table-bordered table-striped table-hover table-sm">
-    <thead>
-        @* שורת הכותרת של הטבלה *@
-        <tr>
-            <th>Id</th>
-            <th>Name</th>
-            <th>UserName</th>
-            <th>Email</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @* לולאה שמיצרת את שורות נתוני הטבלה ממשתני הרשימה *@
-        @foreach (User item in users)
-        {
+@* מודאים שרק מנהל המערכת יכול לבצע שינויים במשתמשי המערכת *@
+@if (loggedUser != null && loggedUser.UserName == "admin")
+{
+    <h3>Users</h3>
+    <p></p>
+    <table class="table table-success table-bordered table-striped table-hover table-sm">
+        <thead>
+            @* שורת הכותרת של הטבלה *@
             <tr>
-                <td>@item.Id</td>
-                <td>@item.FullName</td>
-                <td>@item.UserName</td>
-                <td>@item.Email</td>
-                <td><a class="btn btn-warning" href="/edit-user/@item.Id">Edit</a></td>
+                <th>Id</th>
+                <th>Name</th>
+                <th>UserName</th>
+                <th>Email</th>
+                <th></th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @* לולאה שמיצרת את שורות נתוני הטבלה ממשתני הרשימה *@
+            @foreach (User item in users)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.FullName</td>
+                    <td>@item.UserName</td>
+                    <td>@item.Email</td>
+                    <td>
+                        <a class="btn btn-warning" href="/edit-user/@item.Id">Edit</a>
+                        <button class="btn btn-danger ms-2" @onclick="() => HandleDelete(item.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
 
-@* קו שמפריד בין הטבלה לכפתורים לשם עיצוב *@
-<hr>
+    @* קו שמפריד בין הטבלה לכפתורים לשם עיצוב *@
+    <hr>
 
-<a class="btn btn-primary" href="/add-user">+Add User</a>
+    <a class="btn btn-primary" href="/add-user">+Add User</a>
 
-
-<hr>
-
-@* --- עדכון משתמש --- *@
-@* שדה קלט לבחירת המספר המזהה של המשתמש שאותו נעדכן *@
-<text>Id:</text>
-<input type="number" @bind-value="updateUserId" />
-<p></p>
-
-@* שדות קלט לעדכון משתמש - מקושרים למשתנים לעדכון *@
-
-@* שדה שם *@
-<text>Name:</text>
-<input @bind-value="updateName" />
-<p></p>
-
-@* שדה אימייל *@
-<text>Email:</text>
-<input @bind-value="updateEmail" />
-<p></p>
-
-@* כפתור לעדכון המשתמש *@
-<button class="btn btn-success" @onclick="UpdateUser">Update User</button>
-
-<hr>
-
-@* --- מחיקת משתמש --- *@
-@* שדה קלט לבחירת המספר המזהה של המשתמש שאותו נמחוק *@
-<text>Id:</text>
-<input type="number" @bind-value="deleteUserId" />
-<p></p>
-
-@* כפתור המחיקה *@
-<button class="btn btn-danger" @onclick="DeleteUser">Delete</button>
+    <hr> 
+}
 
 @code {
     // הרשימות שמכילות את המידע שנציג בטבלה
     List<User> users = new List<User>();
+    User loggedUser;
     UserService userService = new UserService();
 
-
-    // משתני קלט לפעולת הוספת משתמש
-    string addName = "";
-    string addEmail = "";
-
-    // משתני קלט לפעולת עדכון משתמש
-    int updateUserId;
-    string updateName = "";
-    string updateEmail = "";
-
-    // משתנה קלט למחיקת משתמש
-    int deleteUserId;
-
-    // הפעולה שמוסיפה משתמש חדש לרשימות
-    void AddUser()
+ 
+    protected override async Task OnInitializedAsync()
     {
-        //FIXME
+        // שליפת המשתמש המחובר מהשירות
+        loggedUser = await loginService.GetLoggedUser();
 
-        //נוסיף ערכים לרשימות מהמשתנים ששמקושרים לשדות הקלט
-        // names.Add(addName);
-        // emails.Add(addEmail);
+        //מודאים שרק מנהל המערכת יכול לבצע שינויים במשתמשי המערכת
+        if (loggedUser == null || loggedUser.UserName != "admin")
+        {
+            Nav.NavigateTo("/");
+            return;
+        }
 
-        // ניקוי שדות ההוספה לאחר הפעולה
-        addName = "";
-        addEmail = "";
-    }
-
-    void UpdateUser()
-    {
-        //FIXME
-        //בדיקה שהמספר המזהה של המשתמש שהוזן בשדה הקלט תקין
-        //אם הוא גדול ממספר המשתמשים ברשימה או שלילי - נסיים את הפעולה מבלי לבצע את העדכון
-        // if (updateUserId > names.Count || updateUserId < 1)
-        // {
-        //     return;
-        // }
-        // נעדכן ערכים ברשימות מהמשתנים ששמקושרים לשדות הקלט
-        // נעדכן את ש
-        // names[updateUserId - 1] = updateName;
-        // emails[updateUserId - 1] = updateEmail;
-    }
-
-    //הפעולה שמסירה משתמש חדש לרשימות
-    void DeleteUser()
-    {
-        //FIXME
-        //הדפסת מידע לקונסולה לצורך בדיקות
-        // Console.WriteLine($"idToDelete: {deleteUserId} names.Count:{names.Count}");
-        //בדיקה שהמספר המזהה של המשתמש שהוזן בשדה הקלט תקין
-        //אם הוא גדול ממספר המשתמשים ברשימה או שלילי - נסיים את הפעולה מבלי לבצע את המחיקה
-        // if (deleteUserId > names.Count || deleteUserId < 1)
-        // {
-        //     return;
-        // }
-        //אם הגענו לכאן - המספר תקין ונוכל למחוק את המשתמש מהרשימות
-        // names.RemoveAt(deleteUserId - 1);
-        // emails.RemoveAt(deleteUserId - 1);
-    }
-
-    // פעולה מיוחדת שמתבצעת כל פעם שהדף עולה, נשתמש בה להכניס ערכי דוגמא לרשימות
-    protected override void OnInitialized()
-    {
         users = userService.GetAllUsers();
     }
+
+    private void HandleDelete(int id)
+    {
+        userService.DeleteUser(id);
+        users = userService.GetAllUsers();
+    }
+
 }
