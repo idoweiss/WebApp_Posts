@@ -364,3 +364,4 @@ FodyWeavers.xsd
 /WebApp/database.db
 /WebApp/database.db-shm
 /WebApp/database.db-wal
+/WebApp/Components/Pages/AddPost2.razor
