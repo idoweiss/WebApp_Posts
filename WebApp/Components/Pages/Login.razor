@@ -1,7 +1,10 @@
 ﻿@page "/"
 @using WebApp
+@* הזרקת השירות לניהול המשתמש המחובר ושירות הניווט *@
 @inject LoginService loginService
 @inject NavigationManager Nav
+
+@* הגדרה המאפשרת לדף להיות אינטראקטיבי וצד-שרת *@
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 
 <div class="container mt-5 text-end" dir="rtl">
@@ -18,9 +21,17 @@
         <input type="password" class="form-control" @bind-value="loginUser.Password" />
     </div>
 
+    @* הצגת הודעת שגיאה במידה וההתחברות נכשלה *@
+    @if (errorMessage != "")
+    {
+        <div class="alert alert-danger mt-2">
+            @errorMessage
+        </div>
+    }
+
     <button class="btn btn-primary" @onclick="HandleLogin">התחבר</button>
 
-    @* קישור לדף ההרשמה בכתובת הקיימת *@
+    @* קישור לדף ההרשמה עבור משתמשים חדשים *@
     <div class="mt-3">
         <span>עדיין לא רשומים? </span>
         <a href="/add-user">להרשמה למערכת לחצו כאן</a>
@@ -28,14 +39,30 @@
 </div>
 
 @code {
+    // יצירת עצם שיכיל את נתוני המשתמש שמנסה להתחבר
     User loginUser = new User();
 
+    // משתנה לשמירת הודעת שגיאה לתצוגה
+    string errorMessage = "";
+
+    // פעולה המתבצעת בעת לחיצה על כפתור ההתחברות
     private async Task HandleLogin()
     {
+        // איפוס הודעת השגיאה לפני כל ניסיון התחברות חדש
+        errorMessage = "";
+
+        // ביצוע אימות מול השירות ובדיקה האם המשתמש קיים במסד הנתונים
         bool success = await loginService.Login(loginUser.UserName, loginUser.Password);
+
         if (success)
         {
+            // אם ההתחברות הצליחה, נעבור לדף הראשי של המערכת
             Nav.NavigateTo("/posts-table");
+        }
+        else
+        {
+            // אם ההתחברות נכשלה, נעדכן את הודעת השגיאה עבור המשתמש
+            errorMessage = $"שם המשתמש {loginUser.UserName} או הסיסמה אינם נכונים";
         }
     }
 }
