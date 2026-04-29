@@ -5,7 +5,7 @@
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 
 @* מודאים שרק מנהל המערכת יכול לבצע שינויים במשתמשי המערכת *@
-@if (loggedUser != null && loggedUser.UserName == "admin" && user != null)
+@if (loggedUser != null && user != null)// && loggedUser.UserName == "admin" )
 {
     <h3>Edit User</h3>
 
@@ -47,7 +47,7 @@
     {
         loggedUser = await loginService.GetLoggedUser();
         //מודאים שרק מנהל המערכת יכול לבצע שינויים במשתמשי המערכת
-        if (loggedUser == null || loggedUser.UserName != "admin")
+        if (loggedUser == null)// || loggedUser.UserName != "admin")
         {
             Nav.NavigateTo("/");
             return;

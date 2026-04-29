@@ -5,7 +5,7 @@
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 
 @* מודאים שרק מנהל המערכת יכול לבצע שינויים במשתמשי המערכת *@
-@if (loggedUser != null && loggedUser.UserName == "admin")
+@if (loggedUser != null)// && loggedUser.UserName == "admin")
 {
     <h3>Users</h3>
     <p></p>
@@ -43,7 +43,10 @@
 
     <a class="btn btn-primary" href="/add-user">+Add User</a>
 
-    <hr> 
+    @* כפתור התנתקות מהמערכת *@
+    <button class="btn btn-secondary ms-2" @onclick="HandleLogout">Logout</button>
+
+    <hr>
 }
 
 @code {
@@ -52,14 +55,14 @@
     User loggedUser;
     UserService userService = new UserService();
 
- 
+
     protected override async Task OnInitializedAsync()
     {
         // שליפת המשתמש המחובר מהשירות
         loggedUser = await loginService.GetLoggedUser();
 
         //מודאים שרק מנהל המערכת יכול לבצע שינויים במשתמשי המערכת
-        if (loggedUser == null || loggedUser.UserName != "admin")
+        if (loggedUser == null)// || loggedUser.UserName != "admin")
         {
             Nav.NavigateTo("/");
             return;
@@ -72,6 +75,13 @@
     {
         userService.DeleteUser(id);
         users = userService.GetAllUsers();
+    }
+
+    // פעולה המבצעת התנתקות מהמערכת ומעבירה לדף הכניסה
+    private async Task HandleLogout()
+    {
+        await loginService.Logout();
+        Nav.NavigateTo("/");
     }
 
 }
