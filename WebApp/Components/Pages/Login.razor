@@ -7,40 +7,47 @@
 @* הגדרה המאפשרת לדף להיות אינטראקטיבי וצד-שרת *@
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 
-<div class="container mt-5 text-end" dir="rtl">
-    <h1 class="display-4 text-primary mb-4">הרשת החברתית שלי</h1>
-    <h3>כניסה למערכת</h3>
+@* הצגת תוכן הדף רק אם סיימנו את הבדיקה והמשתמש אינו מחובר *@
+@if (!isChecking)
+{
+    <div class="container mt-5 text-end" dir="rtl">
+        <h1 class="display-4 text-primary mb-4">הרשת החברתית שלי</h1>
+        <h3>כניסה למערכת</h3>
 
-    <div class="mb-3">
-        <label>שם משתמש:</label>
-        <input class="form-control" @bind-value="loginUser.UserName" />
-    </div>
-
-    <div class="mb-3">
-        <label>סיסמה:</label>
-        <input type="password" class="form-control" @bind-value="loginUser.Password" />
-    </div>
-
-    @* הצגת הודעת שגיאה במידה וההתחברות נכשלה *@
-    @if (errorMessage != "")
-    {
-        <div class="alert alert-danger mt-2">
-            @errorMessage
+        <div class="mb-3">
+            <label>שם משתמש:</label>
+            <input class="form-control" @bind-value="loginUser.UserName" />
         </div>
-    }
 
-    <button class="btn btn-primary" @onclick="HandleLogin">התחבר</button>
+        <div class="mb-3">
+            <label>סיסמה:</label>
+            <input type="password" class="form-control" @bind-value="loginUser.Password" />
+        </div>
 
-    @* קישור לדף ההרשמה עבור משתמשים חדשים *@
-    <div class="mt-3">
-        <span>עדיין לא רשומים? </span>
-        <a href="/add-user">להרשמה למערכת לחצו כאן</a>
+        @* הצגת הודעת שגיאה במידה וההתחברות נכשלה *@
+        @if (errorMessage != "")
+        {
+            <div class="alert alert-danger mt-2">
+                @errorMessage
+            </div>
+        }
+
+        <button class="btn btn-primary" @onclick="HandleLogin">התחבר</button>
+
+        @* קישור לדף ההרשמה עבור משתמשים חדשים *@
+        <div class="mt-3">
+            <span>עדיין לא רשומים? </span>
+            <a href="/add-user">להרשמה למערכת לחצו כאן</a>
+        </div>
     </div>
-</div>
+}
 
 @code {
     // כתובת היעד שאליה נעבור לאחר התחברות מוצלחת
     string destination = "/posts-table";
+
+    // משתנה הקובע האם אנו בעיצומה של בדיקת התחברות
+    bool isChecking = true;
 
     // יצירת עצם שיכיל את נתוני המשתמש שמנסה להתחבר
     User loginUser = new User();
@@ -51,20 +58,24 @@
     // פעולה המתבצעת באופן אוטומטי ברגע שהדף נטען
     protected override async Task OnInitializedAsync()
     {
-        // בדיקה האם המשתמש כבר מחובר (בדיקת המידע השמור בדפדפן)
+        // בדיקה האם המשתמש כבר מחובר
         User loggedUser = await loginService.GetLoggedUser();
 
-        // אם המשתמש כבר מחובר, נבצע העברה אוטומטית לדף המוגן
         if (loggedUser != null)
         {
+            // אם המשתמש מחובר, נעבור לדף היעד מיד
             Nav.NavigateTo(destination);
+        }
+        else
+        {
+            // אם המשתמש לא מחובר, נבטל את מצב הבדיקה כדי להציג את הטופס
+            isChecking = false;
         }
     }
 
     // פעולה המתבצעת בעת לחיצה על כפתור ההתחברות
     private async Task HandleLogin()
     {
-        // איפוס הודעת השגיאה לפני כל ניסיון התחברות חדש
         errorMessage = "";
 
         // ביצוע אימות מול השירות ובדיקה האם המשתמש קיים במסד הנתונים
@@ -77,7 +88,6 @@
         }
         else
         {
-            // אם ההתחברות נכשלה, נעדכן את הודעת השגיאה עבור המשתמש
             errorMessage = $"שם המשתמש {loginUser.UserName} או הסיסמה אינם נכונים";
         }
     }
