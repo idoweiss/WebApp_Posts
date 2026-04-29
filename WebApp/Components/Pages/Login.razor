@@ -39,11 +39,27 @@
 </div>
 
 @code {
+    // כתובת היעד שאליה נעבור לאחר התחברות מוצלחת
+    string destination = "/posts-table";
+
     // יצירת עצם שיכיל את נתוני המשתמש שמנסה להתחבר
     User loginUser = new User();
 
     // משתנה לשמירת הודעת שגיאה לתצוגה
     string errorMessage = "";
+
+    // פעולה המתבצעת באופן אוטומטי ברגע שהדף נטען
+    protected override async Task OnInitializedAsync()
+    {
+        // בדיקה האם המשתמש כבר מחובר (בדיקת המידע השמור בדפדפן)
+        User loggedUser = await loginService.GetLoggedUser();
+
+        // אם המשתמש כבר מחובר, נבצע העברה אוטומטית לדף המוגן
+        if (loggedUser != null)
+        {
+            Nav.NavigateTo(destination);
+        }
+    }
 
     // פעולה המתבצעת בעת לחיצה על כפתור ההתחברות
     private async Task HandleLogin()
@@ -56,8 +72,8 @@
 
         if (success)
         {
-            // אם ההתחברות הצליחה, נעבור לדף הראשי של המערכת
-            Nav.NavigateTo("/posts-table");
+            // אם ההתחברות הצליחה, נעבור לדף המוגן שהגדרנו מראש
+            Nav.NavigateTo(destination);
         }
         else
         {
