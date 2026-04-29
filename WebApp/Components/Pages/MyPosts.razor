@@ -12,17 +12,13 @@
 
     @if (loggedUser != null)
     {
-        @* סרגל כלים עליון עם כפתורי ניווט והצגת שם המשתמש המחובר *@
-        <div class="alert alert-light border d-flex justify-content-between align-items-center mb-4">
-            @* הצגת שם המשתמש מתוך העצם שנשלף בטעינת הדף *@
-            <h2 class="m-0">הפוסטים שלי - @loggedUser.FullName</h2>
-            <div>
-                @* כפתורי ניווט וניהול בצבעים שונים להבחנה מהירה *@
-                <a href="/add-post" class="btn btn-success me-2">הוסף פוסט חדש</a>
-                <a href="/posts" class="btn btn-info me-2">תצוגת גלריה</a>
-                @* כפתור תצוגת טבלה בצבע כחול כדי להבדילו מתצוגת הגלריה *@
-                <a href="/posts-table" class="btn btn-primary me-2">תצוגת טבלה</a>
-                <button class="btn btn-danger" @onclick="HandleLogout">יציאה</button>
+        <div class="mb-4">
+            <h2>הפוסטים שלי - @loggedUser.FullName</h2>
+            <div class="mt-2">
+                <a href="/add-post" class="btn btn-success">הוסף פוסט חדש</a>
+                <a href="/posts" class="btn btn-info ms-2">תצוגת גלריה</a>
+                <a href="/posts-table" class="btn btn-primary ms-2">תצוגת טבלה</a>
+                <button class="btn btn-danger ms-2" @onclick="HandleLogout">יציאה</button>
             </div>
         </div>
 
@@ -41,7 +37,6 @@
                         <td>@item.Text</td>
                         <td><img src="@item.ImageUrl" style="width:100px;" /></td>
                         <td>
-                            @* כפתורי ניהול המופיעים רק עבור הפוסטים האישיים של המשתמש *@
                             <a href="/edit-post/@item.Id" class="btn btn-warning btn-sm me-2">עריכה</a>
                             <button class="btn btn-danger btn-sm" @onclick="() => DeletePost(item.Id)">מחיקה</button>
                         </td>

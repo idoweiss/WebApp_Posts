@@ -13,13 +13,14 @@
     @* הצגת התוכן רק אם קיים עצם של משתמש מחובר *@
     @if (loggedUser != null)
     {
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        @* אזור כותרת הדף והכפתורים  *@
+        <div class="mb-4">
             <h2>@loggedUser.FullName</h2>
-            <div>
-                <a href="/add-post" class="btn btn-success ms-2">הוסף פוסט חדש</a>
+            <div class="mt-2">
+                <a href="/add-post" class="btn btn-success">הוסף פוסט חדש</a>
                 <a href="/my-posts" class="btn btn-warning ms-2">הפוסטים שלי</a>
                 <a href="/posts" class="btn btn-info ms-2">תצוגת גלריה</a>
-                <button class="btn btn-secondary" @onclick="HandleLogout">יציאה</button>
+                <button class="btn btn-secondary ms-2" @onclick="HandleLogout">יציאה</button>
             </div>
         </div>
 
@@ -30,7 +31,6 @@
                     <th>כותב</th>
                     <th>תיאור</th>
                     <th>תמונה</th>
-                    <th>לייקים</th>
                     <th>פעולות ניהול</th>
                 </tr>
             </thead>
@@ -44,16 +44,12 @@
                         <td>
                             <img src="@item.ImageUrl" style="width: 100px; height: 100px; object-fit: cover;" />
                         </td>
-                        <td class="text-danger fw-bold">❤️ @item.Likes</td>
                         <td>
-                            @* כפתור לייק זמין לכולם עבור כל פוסט *@
-                            <button class="btn btn-primary btn-sm" @onclick="() => HandleLike(item.Id)">לייק</button>
-
                             @* בדיקה האם המשתמש המחובר הוא בעל הפוסט לצורך הצגת כפתורי עריכה ומחיקה *@
                             @if (item.UserId == loggedUser.Id)
                             {
-                                <a href="/edit-post/@item.Id" class="btn btn-warning btn-sm ms-1">עריכה</a>
-                                <button class="btn btn-danger btn-sm" @onclick="() => DeletePost(item.Id)">מחיקה</button>
+                                <a href="/edit-post/@item.Id" class="btn btn-warning btn-sm">עריכה</a>
+                                <button class="btn btn-danger btn-sm ms-1" @onclick="() => DeletePost(item.Id)">מחיקה</button>
                             }
                         </td>
                     </tr>
@@ -83,14 +79,6 @@
         }
 
         // טעינת רשימת כל הפוסטים מהמסד
-        allPosts = ps.GetAllPostsByLikes();
-    }
-
-    // פעולה לעדכון לייק עבור פוסט ספציפי
-    private void HandleLike(int postId)
-    {
-        // הוספת לייק תוך שימוש במזהה המשתמש מתוך העצם המחובר
-        ps.AddLike(postId, loggedUser.Id);
         allPosts = ps.GetAllPostsByLikes();
     }
 
