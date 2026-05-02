@@ -20,7 +20,7 @@ namespace WebApp
             DbHelper.RunSqlChange(@"
             INSERT OR IGNORE INTO Users (FullName, UserName, Password, Email) VALUES
             ('מנהל מערכת', 'admin', 'admin123', 'admin@webapp.com'),
-            ('Israel Israeli', 'israel1', 'p123', 'israel@example.com'),
+            ('Israel Israeli', 'israel', 'p123', 'israel@example.com'),
             ('Neta Cohen', 'netac', 'p456', 'neta@example.com'),
             ('Yossi Levi', 'yossi_l', 'p789', 'yossi@example.com');");
         }

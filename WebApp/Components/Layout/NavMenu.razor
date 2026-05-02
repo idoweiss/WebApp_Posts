@@ -1,6 +1,6 @@
 ﻿<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">WebApp</a>
+        <a class="navbar-brand" href="">הרשת החברתית שלי</a>
     </div>
 </div>
 
@@ -9,20 +9,26 @@
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
     <nav class="flex-column">
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+            <NavLink class="nav-link" href="posts" Match="NavLinkMatch.All">
+                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> כל הפוסטים
             </NavLink>
         </div>
 
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
+            <NavLink class="nav-link" href="posts-table">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> כל הפוסטים כטבלה
             </NavLink>
         </div>
 
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
+            <NavLink class="nav-link" href="my-posts">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> הפוסטים שלי
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="add-post">
+                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> הוסף פוסט חדש
             </NavLink>
         </div>
     </nav>
